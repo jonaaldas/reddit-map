@@ -1,0 +1,146 @@
+{
+  "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
+  "name": "map-places",
+  "post": {
+    "dir": "dist/client",
+    "entrypoints": {
+      "default": {
+        "inline": true,
+        "entry": "game.html"
+      }
+    }
+  },
+  "permissions": {
+    "reddit": true,
+    "http": {
+      "domains": [
+        "api.openai.com",
+        "nominatim.openstreetmap.org",
+        "tile.openstreetmap.org"
+      ]
+    }
+  },
+  "server": {
+    "dir": "dist/server",
+    "entry": "index.cjs"
+  },
+  "menu": {
+    "items": [
+      {
+        "label": "Create a new RedditMap post",
+        "description": "Drops a fresh map post in this subreddit",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/post-create"
+      },
+      {
+        "label": "RedditMaps: configure cities",
+        "description": "Pick one or more cities for the map (geocoded via OpenStreetMap)",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/configure-cities"
+      },
+      {
+        "label": "RedditMaps: re-scan top posts",
+        "description": "Refetches top posts and pins those that mention a known neighborhood",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/rescan"
+      },
+      {
+        "label": "RedditMaps: clear all pins",
+        "description": "Empties the pin store for this subreddit",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/clear-pins"
+      },
+      {
+        "label": "RedditMaps: clear LLM debug log",
+        "description": "Clears the saved per-call LLM debug log (use before a fresh rescan)",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/clear-llm-log"
+      },
+      {
+        "label": "RedditMaps: import demo data",
+        "description": "Pin top posts from another subreddit (testing/dev only)",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/import-form"
+      }
+    ]
+  },
+  "forms": {
+    "importForm": "/internal/form/import-submit",
+    "cityConfig": "/internal/form/city-config-submit"
+  },
+  "settings": {
+    "global": {
+      "OPENAI_API_KEY": {
+        "type": "string",
+        "label": "OpenAI API key",
+        "helpText": "Used by Phase 5 LLM location extraction. Set via `devvit settings set OPENAI_API_KEY`.",
+        "isSecret": true
+      }
+    },
+    "subreddit": {
+      "cityName": {
+        "type": "select",
+        "label": "Map city",
+        "helpText": "Which city should this subreddit's map focus on? Leave unset to auto-detect from the subreddit name.",
+        "options": [
+          {
+            "label": "San Francisco",
+            "value": "San Francisco"
+          },
+          {
+            "label": "New York City",
+            "value": "New York City"
+          },
+          {
+            "label": "London",
+            "value": "London"
+          },
+          {
+            "label": "Barcelona",
+            "value": "Barcelona"
+          },
+          {
+            "label": "Bogotá",
+            "value": "Bogotá"
+          },
+          {
+            "label": "Quito",
+            "value": "Quito"
+          },
+          {
+            "label": "Andes (Quito + Bogotá)",
+            "value": "Andes"
+          }
+        ]
+      },
+      "cities": {
+        "type": "paragraph",
+        "label": "Map cities",
+        "helpText": "One city per line. PRE-BUNDLED (work instantly):\n  San Francisco\n  New York City\n  London\n  Barcelona\n  Bogotá\n  Quito\n  Andes  (expands to Quito + Bogotá)\nYou can mix them, e.g. type both 'Quito' and 'Bogotá' to get a regional view.\nFor any other city (e.g. 'Tokyo, Japan'), the server tries Nominatim — requires Reddit to approve the nominatim.openstreetmap.org fetch domain, otherwise the line is skipped.\nLeave empty to fall back to the legacy 'Map city' dropdown or auto-detect from the subreddit name."
+      },
+      "aiPromptOverride": {
+        "type": "paragraph",
+        "label": "AI system prompt (override)",
+        "helpText": "Leave EMPTY to use the built-in default (Asian restaurants). Paste a custom system prompt to override. The model must still return JSON matching {found,place_name,lat,lng} — see Debug panel → 'View AI prompt' to copy the default as a starting point."
+      }
+    }
+  },
+  "triggers": {
+    "onAppInstall": "/internal/triggers/on-app-install",
+    "onPostCreate": "/internal/triggers/on-post-create",
+    "onPostDelete": "/internal/triggers/on-post-delete"
+  },
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build"
+  },
+  "dev": {
+    "subreddit": "map_places_dev"
+  }
+}
