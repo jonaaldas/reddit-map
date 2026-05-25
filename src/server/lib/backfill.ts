@@ -1,6 +1,6 @@
 import { reddit } from '@devvit/web/server';
 import {
-  type MapCity,
+  type CityName,
   type NormalizedPost,
   type Pin,
 } from '@redditmap/shared';
@@ -45,16 +45,18 @@ export type BackfillResult = {
  */
 export async function backfillSubreddit(
   storeSubreddit: string,
-  cities: readonly MapCity[],
+  cities: CityName | readonly CityName[],
   perTimeframeLimit = 1000,
   sourceSubreddit?: string,
 ): Promise<BackfillResult> {
-  const cityList = [...cities];
+  const cityList: CityName[] = Array.isArray(cities)
+    ? [...cities]
+    : [cities as CityName];
   if (!cityList.length) throw new Error('backfillSubreddit: at least one city required');
   const source = sourceSubreddit ?? storeSubreddit;
   const t0 = Date.now();
   console.log(
-    `[backfill] START source=r/${source} dest=r/${storeSubreddit} cities=${cityList.map((c) => c.shortName).join('+')} perTimeframeLimit=${perTimeframeLimit} timeframes=${TIMEFRAMES.join(',')}`,
+    `[backfill] START source=r/${source} dest=r/${storeSubreddit} cities=${cityList.join('+')} perTimeframeLimit=${perTimeframeLimit} timeframes=${TIMEFRAMES.join(',')}`,
   );
 
   const seen = new Set<string>();
@@ -154,7 +156,7 @@ export async function backfillSubreddit(
         hood: result.hit.place_name,
         lat: result.hit.lat,
         lng: result.hit.lng,
-        city: result.city.shortName,
+        city: result.city,
       });
     }
     console.log(

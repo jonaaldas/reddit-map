@@ -14,9 +14,7 @@
     "reddit": true,
     "http": {
       "domains": [
-        "api.openai.com",
-        "nominatim.openstreetmap.org",
-        "tile.openstreetmap.org"
+        "api.openai.com"
       ]
     }
   },
@@ -32,13 +30,6 @@
         "location": "subreddit",
         "forUserType": "moderator",
         "endpoint": "/internal/menu/post-create"
-      },
-      {
-        "label": "RedditMaps: configure cities",
-        "description": "Pick one or more cities for the map (geocoded via OpenStreetMap)",
-        "location": "subreddit",
-        "forUserType": "moderator",
-        "endpoint": "/internal/menu/configure-cities"
       },
       {
         "label": "RedditMaps: re-scan top posts",
@@ -71,8 +62,7 @@
     ]
   },
   "forms": {
-    "importForm": "/internal/form/import-submit",
-    "cityConfig": "/internal/form/city-config-submit"
+    "importForm": "/internal/form/import-submit"
   },
   "settings": {
     "global": {
@@ -118,11 +108,6 @@
             "value": "Andes"
           }
         ]
-      },
-      "cities": {
-        "type": "paragraph",
-        "label": "Map cities",
-        "helpText": "One city per line. PRE-BUNDLED (work instantly):\n  San Francisco\n  New York City\n  London\n  Barcelona\n  Bogotá\n  Quito\n  Andes  (expands to Quito + Bogotá)\nYou can mix them, e.g. type both 'Quito' and 'Bogotá' to get a regional view.\nFor any other city (e.g. 'Tokyo, Japan'), the server tries Nominatim — requires Reddit to approve the nominatim.openstreetmap.org fetch domain, otherwise the line is skipped.\nLeave empty to fall back to the legacy 'Map city' dropdown or auto-detect from the subreddit name."
       },
       "aiPromptOverride": {
         "type": "paragraph",

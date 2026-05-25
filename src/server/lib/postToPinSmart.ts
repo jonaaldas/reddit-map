@@ -1,16 +1,19 @@
-import { type MapCity, type NormalizedPost, type Pin } from '@redditmap/shared';
+import { type CityName, type NormalizedPost, type Pin } from '@redditmap/shared';
 import { llmExtract } from './llmExtract';
 
 /**
- * LLM-only extraction across one or more cities. Tries each city in order;
- * the bbox guard inside llmExtract drops hits outside the city, so the
- * first city whose bbox contains the venue wins.
+ * LLM-only extraction. Returns a Pin only if the post names a specific
+ * food/nightlife venue (per the prompt in llmExtract). Neighborhoods,
+ * generic recommendations, and non-food posts return null.
  */
 export async function postToPinSmart(
   post: NormalizedPost,
-  cities: readonly MapCity[],
+  cities: CityName | readonly CityName[],
 ): Promise<Pin | null> {
-  for (const city of cities) {
+  const list: readonly CityName[] = Array.isArray(cities)
+    ? cities
+    : [cities as CityName];
+  for (const city of list) {
     const llm = await llmExtract(post, city);
     if (!llm) continue;
     return {
@@ -23,7 +26,7 @@ export async function postToPinSmart(
       hood: llm.place_name,
       lat: llm.lat,
       lng: llm.lng,
-      city: city.shortName,
+      city,
     };
   }
   return null;

@@ -1,5 +1,5 @@
 import { context, settings } from '@devvit/web/server';
-import type { MapCity, NormalizedPost } from '@redditmap/shared';
+import { CITIES, type CityName, type NormalizedPost } from '@redditmap/shared';
 import { appendLlmLog, type LlmLogEntry } from './llmLog';
 
 // Direct OpenAI call from the Devvit server. Per Reddit's docs this is the
@@ -86,11 +86,11 @@ const RESPONSE_SCHEMA = {
 /** Returns null on miss, network error, missing key, or out-of-bbox response. */
 export async function llmExtract(
   post: NormalizedPost,
-  city: MapCity,
+  cityName: CityName,
 ): Promise<LlmExtractResult | null> {
   const baseEntry: Omit<LlmLogEntry, 'outcome'> = {
     ts: Date.now(),
-    city: city.shortName,
+    city: cityName,
     candidateId: post.id,
     candidateKind: post.id.startsWith('t1_') ? 'comment' : 'post',
     title: post.title.slice(0, 200),
@@ -105,11 +105,11 @@ export async function llmExtract(
     return null;
   }
 
-  const [latLo, lngLo, latHi, lngHi] = [city.bbox[0], city.bbox[1], city.bbox[2], city.bbox[3]];
+  const city = CITIES[cityName];
   const { prompt: systemPrompt } = await resolveSystemPrompt();
   const userPrompt =
-    `City: ${city.shortName}\n` +
-    `Allowed coordinate range: lat ${latLo}..${latHi}, lng ${lngLo}..${lngHi}\n\n` +
+    `City: ${cityName}\n` +
+    `Allowed coordinate range: ${city.bbox}\n\n` +
     `Title: ${post.title}\n` +
     `Body: ${post.body.slice(0, 2000)}`;
 
@@ -187,10 +187,11 @@ export async function llmExtract(
   }
 
   // Reject hallucinated coordinates outside the city bbox.
+  const [latLo, latHi, lngLo, lngHi] = city.bboxBounds;
   if (parsed.lat! < latLo || parsed.lat! > latHi || parsed.lng! < lngLo || parsed.lng! > lngHi) {
     console.warn(
       `[llmExtract] DROP-BBOX "${titleSlice}" → ${parsed.place_name} (${parsed.lat},${parsed.lng}) outside`,
-      city.bbox,
+      city.bboxBounds,
     );
     await logEntry({ ...baseEntry, outcome: 'drop-bbox', llmRaw: parsed });
     return null;

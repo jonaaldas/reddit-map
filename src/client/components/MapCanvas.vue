@@ -3,35 +3,44 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { Map as LMap, Marker } from 'leaflet';
 import { navigateTo } from '@devvit/web/client';
 import {
+  CITIES,
+  CITY_REGIONS,
+  CITY_SCOPES,
+  SCOPE_REGIONS,
   TILE_URL,
-  TILE_MIN_ZOOM,
-  TILE_MAX_ZOOM,
-  combinedMapCityBounds,
-  type MapCity,
+  type CityName,
   type Pin,
+  type ScopeName,
 } from '@redditmap/shared';
 
 const props = defineProps<{
-  cities: MapCity[];
+  cityNames: CityName[];
   subredditName: string;
   pins: Pin[];
 }>();
 
-// Live OSM tiles, so any geocoded bbox renders without bundled assets.
-// Combined bounds for the picked cities → used for fitBounds + maxBounds
-// (with some breathing room so users can pan slightly around each city).
-const baseBounds = combinedMapCityBounds(props.cities);
-const padLatLng: [number, number] = [
-  Math.max(0.1, (baseBounds[1][0] - baseBounds[0][0]) * 0.25),
-  Math.max(0.1, (baseBounds[1][1] - baseBounds[0][1]) * 0.25),
-];
-const bounds: [[number, number], [number, number]] = [
-  [baseBounds[0][0] - padLatLng[0], baseBounds[0][1] - padLatLng[1]],
-  [baseBounds[1][0] + padLatLng[0], baseBounds[1][1] + padLatLng[1]],
-];
-const isMulti = props.cities.length > 1;
-const minZoom = TILE_MIN_ZOOM;
-const maxZoom = TILE_MAX_ZOOM;
+const primaryRegion = CITY_REGIONS[props.cityNames[0]!];
+const primaryCity = CITIES[props.cityNames[0]!];
+
+// If the cityNames exactly match a known scope (e.g. Quito+Bogotá → Andes),
+// use the scope's pre-fetched tile bbox as BOTH the fitBounds target and
+// the maxBounds. This guarantees the visible map area equals the cached
+// tile area — no blue gaps, no panning into uncovered space.
+function resolveScope(): ScopeName | null {
+  if (props.cityNames.length < 2) return null;
+  const sortedSet = [...props.cityNames].sort().join(',');
+  for (const [name, list] of Object.entries(CITY_SCOPES) as [ScopeName, CityName[]][]) {
+    if ([...list].sort().join(',') === sortedSet) return name;
+  }
+  return null;
+}
+
+const scopeName = resolveScope();
+const scope = scopeName ? SCOPE_REGIONS[scopeName] : null;
+const isMulti = !!scope;
+const bounds = scope ? scope.bounds : primaryRegion.bounds;
+const minZoom = scope ? scope.minZoom : primaryRegion.minZoom;
+const maxZoom = primaryRegion.maxZoom;
 
 const mapEl = ref<HTMLDivElement | null>(null);
 let map: LMap | null = null;
@@ -91,8 +100,7 @@ onMounted(async () => {
   if (isMulti) {
     map.fitBounds(bounds, { padding: [24, 24] });
   } else {
-    const only = props.cities[0]!;
-    map.setView([only.lat, only.lng], 12);
+    map.setView(primaryCity.c, primaryCity.z);
   }
   map.setMaxBounds(bounds);
 

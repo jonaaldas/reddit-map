@@ -42,17 +42,17 @@ triggers.post('/on-app-install', async (c) => {
     console.error('createPost failed during onAppInstall', e);
   }
 
-  const { cities } = await resolveCity();
-  if (!cities.length) {
+  const { cityNames } = await resolveCity();
+  if (!cityNames.length) {
     return c.json<TriggerResponse>({
       status: 'success',
-      message: `Installed in r/${sub}${postNote}. Mod must configure cities before pins can populate.`,
+      message: `Installed in r/${sub}${postNote}. Mod must pick a city in app settings before pins can populate.`,
     });
   }
 
-  const cityLabel = cities.map((c) => c.shortName).join('+');
+  const cityLabel = cityNames.join('+');
   try {
-    const result = await backfillSubreddit(sub, cities, 100);
+    const result = await backfillSubreddit(sub, cityNames, 100);
     return c.json<TriggerResponse>({
       status: 'success',
       message: `Installed in r/${sub}${postNote}, cities=${cityLabel}, scanned ${result.scanned}, pinned ${result.matched} Asian restaurants (trigger ${input?.type ?? 'unknown'}).`,
@@ -80,8 +80,8 @@ triggers.post('/on-post-create', async (c) => {
     return c.json<TriggerResponse>({ status: 'success', message: 'no post/sub in payload' });
   }
 
-  const { cities } = await resolveCity();
-  if (!cities.length) {
+  const { cityNames } = await resolveCity();
+  if (!cityNames.length) {
     return c.json<TriggerResponse>({ status: 'success', message: 'no city configured yet' });
   }
 
@@ -94,7 +94,7 @@ triggers.post('/on-post-create', async (c) => {
     numComments: post.numComments,
     createdUtc: post.createdAt,
   };
-  const pin = await postToPinSmart(normalized, cities);
+  const pin = await postToPinSmart(normalized, cityNames);
   if (!pin) {
     return c.json<TriggerResponse>({ status: 'success', message: `no place match in "${post.title.slice(0, 60)}"` });
   }

@@ -6,7 +6,7 @@ import { useCity } from './composables/useCity';
 import { usePins } from './composables/usePins';
 
 const subName = context.subredditName ?? 'unknown';
-const { cities, source, failedLines, debug, loading: loadingCity, error: cityError } = useCity();
+const { cityNames, source, debug, loading: loadingCity, error: cityError } = useCity();
 const { pins, loading: loadingPins, error: pinsError } = usePins();
 </script>
 
@@ -14,30 +14,22 @@ const { pins, loading: loadingPins, error: pinsError } = usePins();
   <div class="rm-root">
     <div v-if="loadingCity" class="rm-status">Loading map…</div>
     <div v-else-if="cityError" class="rm-status rm-error">{{ cityError }}</div>
-    <div v-else-if="!cities.length" class="rm-status rm-empty">
+    <div v-else-if="!cityNames.length" class="rm-status rm-empty">
       <div class="rm-empty-emoji">🗺️</div>
-      <div class="rm-empty-title">No cities configured</div>
+      <div class="rm-empty-title">No city resolved</div>
       <div class="rm-empty-sub">
-        Open the app's <b>Installation Settings</b> on developers.reddit.com
-        and fill the <b>Map cities</b> field — one city per line (e.g.
-        "Quito, Ecuador"). Server geocodes each via OpenStreetMap.
-      </div>
-      <div v-if="failedLines.length" class="rm-debug rm-debug-fail">
-        Couldn't resolve:
-        <ul style="margin: 4px 0 0 12px; padding: 0;">
-          <li v-for="l in failedLines" :key="l">{{ l }}</li>
-        </ul>
+        Mod settings → submaps-vue → pick a city. If you already did and you're
+        still seeing this, the values below show what the server is reading:
       </div>
 
       <pre class="rm-debug">source: {{ source }}
 subreddit: {{ debug?.subredditName ?? '(none)' }}
-citiesSetting: {{ JSON.stringify(debug?.citiesSettingText ?? '') }}
-legacyCityName: {{ JSON.stringify(debug?.normalizedSetting) }}
-redisCityCount: {{ debug?.redisCityCount ?? 0 }}</pre>
+rawSetting: {{ JSON.stringify(debug?.rawSetting) }}
+normalized: {{ debug?.normalizedSetting ?? '(undefined)' }}</pre>
     </div>
     <MapCanvas
       v-else
-      :cities="cities"
+      :city-names="cityNames"
       :subreddit-name="subName"
       :pins="pins"
     />
@@ -125,11 +117,5 @@ redisCityCount: {{ debug?.redisCityCount ?? 0 }}</pre>
   white-space: pre-wrap;
   max-width: 360px;
   line-height: 1.5;
-}
-.rm-debug-fail {
-  background: #fff3bf;
-  border-color: #ffd43b;
-  color: #855506;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 </style>
