@@ -1,5 +1,5 @@
 import { onMounted, ref } from 'vue';
-import type { Pin, PinsResponse } from '@redditmap/shared';
+import type { Pin, PinsResponse } from '../../shared';
 
 export function usePins() {
   const pins = ref<Pin[]>([]);

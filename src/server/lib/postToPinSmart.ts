@@ -1,4 +1,4 @@
-import { type CityName, type NormalizedPost, type Pin } from '@redditmap/shared';
+import { type CityName, type NormalizedPost, type Pin } from '../../shared';
 import { llmExtract } from './llmExtract';
 
 /**

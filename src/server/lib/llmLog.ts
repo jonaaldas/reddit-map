@@ -1,5 +1,5 @@
 import { redis } from '@devvit/web/server';
-import type { CityName } from '@redditmap/shared';
+import type { CityName } from '../../shared';
 
 // Bounded JSON-blob log of every LLM call. Cheap, no list ops needed.
 // Kept per-sub so the dev playtest sub doesn't pollute prod.

@@ -1,5 +1,5 @@
 import { onMounted, ref } from 'vue';
-import type { CityName } from '@redditmap/shared';
+import type { CityName } from '../../shared';
 
 type CityResolution = {
   cityNames: CityName[];

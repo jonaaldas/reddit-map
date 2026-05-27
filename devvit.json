@@ -1,6 +1,6 @@
 {
   "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
-  "name": "map-places",
+  "name": "maps-of-places",
   "post": {
     "dir": "dist/client",
     "entrypoints": {
@@ -74,6 +74,12 @@
       }
     },
     "subreddit": {
+      "subredditDescription": {
+        "type": "paragraph",
+        "label": "About your subreddit",
+        "helpText": "Tell us about your subreddit — what it's about and the kind of places you want on the map. Used to tune what the AI looks for.",
+        "placeholder": "e.g. r/AskNYC — locals sharing the best restaurants, bars, and hidden gems across New York City."
+      },
       "cityName": {
         "type": "select",
         "label": "Map city",
@@ -109,6 +115,108 @@
           }
         ]
       },
+      "postsToScan": {
+        "type": "select",
+        "label": "Posts to scan",
+        "helpText": "How many recent posts to scan when building the map.",
+        "defaultValue": "100",
+        "options": [
+          {
+            "label": "50 most recent",
+            "value": "50"
+          },
+          {
+            "label": "100 most recent",
+            "value": "100"
+          },
+          {
+            "label": "250 most recent",
+            "value": "250"
+          },
+          {
+            "label": "500 most recent",
+            "value": "500"
+          }
+        ]
+      },
+      "dateRange": {
+        "type": "select",
+        "label": "Date range",
+        "helpText": "Only consider posts from this time window.",
+        "defaultValue": "30",
+        "options": [
+          {
+            "label": "Last 7 days",
+            "value": "7"
+          },
+          {
+            "label": "Last 30 days",
+            "value": "30"
+          },
+          {
+            "label": "Last 90 days",
+            "value": "90"
+          },
+          {
+            "label": "Last year",
+            "value": "365"
+          },
+          {
+            "label": "All time",
+            "value": "all"
+          }
+        ]
+      },
+      "minMentions": {
+        "type": "select",
+        "label": "Min. mentions to appear",
+        "helpText": "A place must be mentioned at least this many times to get a pin.",
+        "defaultValue": "2",
+        "options": [
+          {
+            "label": "1+ mention",
+            "value": "1"
+          },
+          {
+            "label": "2+ mentions",
+            "value": "2"
+          },
+          {
+            "label": "3+ mentions",
+            "value": "3"
+          },
+          {
+            "label": "5+ mentions",
+            "value": "5"
+          }
+        ]
+      },
+      "sentiment": {
+        "type": "select",
+        "label": "Sentiment",
+        "helpText": "Which sentiment of mentions to map.",
+        "defaultValue": "positive",
+        "options": [
+          {
+            "label": "All",
+            "value": "all"
+          },
+          {
+            "label": "Positive only",
+            "value": "positive"
+          },
+          {
+            "label": "Negative only",
+            "value": "negative"
+          }
+        ]
+      },
+      "includeNegative": {
+        "type": "boolean",
+        "label": "Include negative posts",
+        "helpText": "Show places people warn others to avoid — marked with a red pin.",
+        "defaultValue": false
+      },
       "aiPromptOverride": {
         "type": "paragraph",
         "label": "AI system prompt (override)",
@@ -121,11 +229,16 @@
     "onPostCreate": "/internal/triggers/on-post-create",
     "onPostDelete": "/internal/triggers/on-post-delete"
   },
+  "scheduler": {
+    "tasks": {
+      "backfill": "/internal/scheduler/backfill"
+    }
+  },
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build"
   },
   "dev": {
-    "subreddit": "map_places_dev"
+    "subreddit": "maps_of_places_dev"
   }
 }

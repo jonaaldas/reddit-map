@@ -5,7 +5,7 @@ import {
   inferCityFromSubreddit,
   inferScopeFromSubreddit,
   type CityName,
-} from '@redditmap/shared';
+} from '../../shared';
 
 const VALID_CITY = new Set<string>(SUPPORTED_CITY_NAMES);
 

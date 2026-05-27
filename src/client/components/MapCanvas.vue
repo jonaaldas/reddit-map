@@ -11,7 +11,7 @@ import {
   type CityName,
   type Pin,
   type ScopeName,
-} from '@redditmap/shared';
+} from '../../shared';
 
 const props = defineProps<{
   cityNames: CityName[];

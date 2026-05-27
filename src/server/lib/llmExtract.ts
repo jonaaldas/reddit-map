@@ -1,5 +1,5 @@
 import { context, settings } from '@devvit/web/server';
-import { CITIES, type CityName, type NormalizedPost } from '@redditmap/shared';
+import { CITIES, type CityName, type NormalizedPost } from '../../shared';
 import { appendLlmLog, type LlmLogEntry } from './llmLog';
 
 // Direct OpenAI call from the Devvit server. Per Reddit's docs this is the

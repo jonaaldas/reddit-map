@@ -3,7 +3,7 @@ import {
   type CityName,
   type NormalizedPost,
   type Pin,
-} from '@redditmap/shared';
+} from '../../shared';
 import { savePins } from './pinStore';
 import { llmExtract } from './llmExtract';
 

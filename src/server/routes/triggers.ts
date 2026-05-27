@@ -1,15 +1,14 @@
 import { Hono } from 'hono';
-import { context } from '@devvit/web/server';
+import { context, scheduler } from '@devvit/web/server';
 import type {
   OnAppInstallRequest,
   OnPostCreateRequest,
   OnPostDeleteRequest,
   TriggerResponse,
 } from '@devvit/web/shared';
-import { type NormalizedPost } from '@redditmap/shared';
+import { type NormalizedPost } from '../../shared';
 import { createPost } from '../core/post';
 import { resolveCity } from '../lib/resolveCity';
-import { backfillSubreddit } from '../lib/backfill';
 import { removePin, upsertPin } from '../lib/pinStore';
 import { postToPinSmart } from '../lib/postToPinSmart';
 
@@ -51,21 +50,28 @@ triggers.post('/on-app-install', async (c) => {
   }
 
   const cityLabel = cityNames.join('+');
+  // The backfill (top posts + comment trees + an LLM call per candidate) takes
+  // minutes — far longer than Devvit allows a trigger handler to run before it
+  // cancels us (rpc code=Canceled, install reported as failed). Hand it to a
+  // scheduler task that fires a few seconds from now and return immediately.
   try {
-    const result = await backfillSubreddit(sub, cityNames, 100);
+    await scheduler.runJob({
+      name: 'backfill',
+      runAt: new Date(Date.now() + 5_000),
+      data: { sub, cityNames },
+    });
     return c.json<TriggerResponse>({
       status: 'success',
-      message: `Installed in r/${sub}${postNote}, cities=${cityLabel}, scanned ${result.scanned}, pinned ${result.matched} Asian restaurants (trigger ${input?.type ?? 'unknown'}).`,
+      message: `Installed in r/${sub}${postNote}, cities=${cityLabel}. Scanning posts in the background — pins will appear shortly (trigger ${input?.type ?? 'unknown'}).`,
     });
   } catch (e) {
-    console.error('Backfill failed', e);
-    return c.json<TriggerResponse>(
-      {
-        status: 'error',
-        message: `Backfill failed: ${e instanceof Error ? e.message : String(e)}`,
-      },
-      500,
-    );
+    console.error('Failed to schedule backfill', e);
+    // Scheduling failed, but the app is installed and the post exists — don't
+    // fail the install over a backfill that the mod can re-trigger from the menu.
+    return c.json<TriggerResponse>({
+      status: 'success',
+      message: `Installed in r/${sub}${postNote}, cities=${cityLabel}. Could not start the background scan — use the "re-scan top posts" menu action to populate pins.`,
+    });
   }
 });
 

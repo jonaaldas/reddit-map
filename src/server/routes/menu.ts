@@ -1,9 +1,8 @@
 import { Hono } from 'hono';
 import type { UiResponse } from '@devvit/web/shared';
-import { context } from '@devvit/web/server';
+import { context, scheduler } from '@devvit/web/server';
 import { createPost } from '../core/post';
 import { resolveCity } from '../lib/resolveCity';
-import { backfillSubreddit } from '../lib/backfill';
 import { clearPins } from '../lib/pinStore';
 import { clearLlmLog } from '../lib/llmLog';
 
@@ -37,22 +36,26 @@ menu.post('/rescan', async (c) => {
   }
 
   const cityLabel = cityNames.join(' + ');
-  console.log(`[rescan] START sub=r/${sub} cities=${cityLabel}`);
+  // Same reasoning as the install trigger: the backfill runs for minutes, well
+  // past the menu request's execution budget. Schedule it and return a toast
+  // immediately rather than blocking (and timing out) on it here.
   try {
-    const result = await backfillSubreddit(sub, cityNames, 100);
-    console.log(
-      `[rescan] DONE matched=${result.matched}/${result.scanned} → r/${sub}`,
-    );
+    await scheduler.runJob({
+      name: 'backfill',
+      runAt: new Date(Date.now() + 1_000),
+      data: { sub, cityNames },
+    });
+    console.log(`[rescan] scheduled sub=r/${sub} cities=${cityLabel}`);
     return c.json<UiResponse>(
       {
-        showToast: `Pinned ${result.matched}/${result.scanned} Asian restaurants to ${cityLabel}.`,
+        showToast: `Re-scanning ${cityLabel} in the background — pins update in a minute or two.`,
       },
       200,
     );
   } catch (e) {
-    console.error('[rescan] FAILED', e);
+    console.error('[rescan] schedule FAILED', e);
     return c.json<UiResponse>(
-      { showToast: 'Re-scan failed (see app logs).' },
+      { showToast: 'Could not start re-scan (see app logs).' },
       500,
     );
   }

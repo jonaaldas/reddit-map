@@ -1,5 +1,5 @@
 import { redis } from '@devvit/web/server';
-import type { Pin } from '@redditmap/shared';
+import type { Pin } from '../../shared';
 
 const MAX_PINS = 250;
 const key = (sub: string) => `pins:${sub}`;
