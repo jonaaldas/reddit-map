@@ -52,6 +52,7 @@ function copy(text: string) {
 
 <template>
   <button
+    v-if="false"
     class="dp-toggle"
     :aria-expanded="open"
     @click="open = !open"
