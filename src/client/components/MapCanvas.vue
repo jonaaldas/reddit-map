@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import type { Map as LMap, Marker } from 'leaflet';
+import type { Coords, DoneCallback, Map as LMap, Marker } from 'leaflet';
 import { navigateTo } from '@devvit/web/client';
 import {
   CITIES,
@@ -84,6 +84,13 @@ function renderPinMarkers(L: typeof import('leaflet'), m: LMap, pins: readonly P
   }
 }
 
+function tileUrl(coords: Coords): string {
+  return TILE_URL
+    .replace('{z}', String(coords.z))
+    .replace('{x}', String(coords.x))
+    .replace('{y}', String(coords.y));
+}
+
 onMounted(async () => {
   const L = await import('leaflet');
   await import('leaflet/dist/leaflet.css');
@@ -104,11 +111,37 @@ onMounted(async () => {
   }
   map.setMaxBounds(bounds);
 
-  // Bundled per-city tile assets, served same-origin from /maps/{z}/{x}/{y}.png.
-  // Coverage is whatever apps/reddit/scripts/fetch-tiles.mjs pre-fetched.
-  // For cities outside that coverage you'll see blank tiles — re-run that
-  // script after adding a new city to public/maps/.
-  L.tileLayer(TILE_URL, {
+  class AuthenticatedTileLayer extends L.GridLayer {
+    override createTile(coords: Coords, done: DoneCallback): HTMLElement {
+      const img = document.createElement('img');
+      img.alt = '';
+
+      fetch(tileUrl(coords), { credentials: 'include' })
+        .then((res) => {
+          if (!res.ok) throw new Error(`Tile HTTP ${res.status}`);
+          return res.blob();
+        })
+        .then((blob) => {
+          const objectUrl = URL.createObjectURL(blob);
+          img.onload = () => {
+            URL.revokeObjectURL(objectUrl);
+            done(undefined, img);
+          };
+          img.onerror = () => {
+            URL.revokeObjectURL(objectUrl);
+            done(new Error('Tile image decode failed'), img);
+          };
+          img.src = objectUrl;
+        })
+        .catch((error: unknown) => {
+          done(error instanceof Error ? error : new Error(String(error)), img);
+        });
+
+      return img;
+    }
+  }
+
+  new AuthenticatedTileLayer({
     minZoom,
     maxZoom,
     tileSize: 256,

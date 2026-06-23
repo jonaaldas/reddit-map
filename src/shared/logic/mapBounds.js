@@ -1,6 +1,7 @@
-// Tile config for the Devvit iframe. Tiles ship as static assets in the
-// app bundle (Devvit CSP allows 'self'), served from `/maps/{z}/{x}/{y}.png`.
-export const TILE_URL = '/maps/{z}/{x}/{y}.png';
+// Tile config for the Devvit iframe. Client-side external requests are blocked
+// by Devvit CSP, so Leaflet requests same-origin tiles and the server proxies
+// the configured map provider.
+export const TILE_URL = '/api/tiles/{z}/{x}/{y}';
 export const TILE_MIN_ZOOM = 6;
 export const TILE_MAX_ZOOM = 13;
 export const CITY_REGIONS = {
@@ -38,6 +39,12 @@ export const CITY_REGIONS = {
         name: 'Quito',
         bounds: [[-0.40, -78.65], [0.00, -78.35]],
         minZoom: 11,
+        maxZoom: 13,
+    },
+    Tokyo: {
+        name: 'Tokyo',
+        bounds: [[35.50, 139.45], [35.90, 139.95]],
+        minZoom: 10,
         maxZoom: 13,
     },
 };
@@ -113,6 +120,9 @@ export function inferCityFromSubreddit(subredditName) {
         colombia: 'Bogotá',
         quito: 'Quito',
         ecuador: 'Quito',
+        tokyo: 'Tokyo',
+        japan: 'Tokyo',
+        japantravel: 'Tokyo',
     };
     if (map[slug])
         return map[slug];

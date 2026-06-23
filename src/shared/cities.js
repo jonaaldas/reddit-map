@@ -101,6 +101,23 @@ export const CITIES = {
             { n: 'Poblenou', lat: 41.4042, lng: 2.1997 },
         ],
     },
+    Tokyo: {
+        c: [35.6762, 139.6503],
+        z: 12,
+        subs: ['Tokyo', 'japan', 'JapanTravel'],
+        bbox: 'lat 35.55-35.82, lng 139.55 to 139.90',
+        bboxBounds: [35.55, 35.82, 139.55, 139.90],
+        hoods: [
+            { n: 'Shibuya', lat: 35.6595, lng: 139.7005 },
+            { n: 'Shinjuku', lat: 35.6938, lng: 139.7034 },
+            { n: 'Ginza', lat: 35.6719, lng: 139.7658 },
+            { n: 'Asakusa', lat: 35.7148, lng: 139.7967 },
+            { n: 'Roppongi', lat: 35.6628, lng: 139.7310 },
+            { n: 'Akihabara', lat: 35.6984, lng: 139.7730 },
+            { n: 'Ueno', lat: 35.7138, lng: 139.7773 },
+            { n: 'Harajuku', lat: 35.6702, lng: 139.7027 },
+        ],
+    },
 };
 export const CITY_NAMES = Object.keys(CITIES);
 //# sourceMappingURL=cities.js.map

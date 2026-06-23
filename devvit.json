@@ -13,8 +13,10 @@
   "permissions": {
     "reddit": true,
     "http": {
+      "enable": true,
       "domains": [
-        "api.openai.com"
+        "api.openai.com",
+        "tile.openstreetmap.org"
       ]
     }
   },
@@ -100,6 +102,10 @@
           {
             "label": "Barcelona",
             "value": "Barcelona"
+          },
+          {
+            "label": "Tokyo",
+            "value": "Tokyo"
           },
           {
             "label": "Bogotá",

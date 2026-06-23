@@ -187,6 +187,8 @@ async function fetchCommentsAsCandidates(
   parent: NormalizedPost,
 ): Promise<NormalizedPost[]> {
   const out: NormalizedPost[] = [];
+  if (!isPostThingId(parent.id)) return out;
+
   try {
     const listing = reddit.getComments({
       postId: parent.id,
@@ -211,4 +213,8 @@ async function fetchCommentsAsCandidates(
     console.warn(`[backfill] comments fetch failed for ${parent.id}`, e);
   }
   return out;
+}
+
+function isPostThingId(id: string): id is `t3_${string}` {
+  return id.startsWith('t3_');
 }

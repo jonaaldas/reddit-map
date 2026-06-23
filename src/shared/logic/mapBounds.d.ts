@@ -1,5 +1,5 @@
 import type { CityName } from '../types';
-export declare const TILE_URL = "/maps/{z}/{x}/{y}.png";
+export declare const TILE_URL = "/api/tiles/{z}/{x}/{y}";
 export declare const TILE_MIN_ZOOM = 6;
 export declare const TILE_MAX_ZOOM = 13;
 /** Leaflet expects bounds as [[south, west], [north, east]]. */

@@ -67,6 +67,15 @@ The map updates automatically as new posts come in. Mods set it up once and don'
 
 ---
 
+## Fetch Domains
+
+The following domains are requested for this app:
+
+- `api.openai.com` - Used server-side to extract place names, coordinates, categories, and sentiment from subreddit posts and comments when moderators scan content.
+- `tile.openstreetmap.org` - Used server-side to fetch OpenStreetMap raster map tiles for the selected city. The app proxies these tiles through its `/api/tiles` route so the Reddit webview only talks to the app's own `/api` endpoints.
+
+---
+
 ## AI processing costs
 
 Reddit's API is free on the Devvit platform. The AI processing that extracts locations, categories, and sentiment from posts does have a cost — currently mods connect their own AI API key.

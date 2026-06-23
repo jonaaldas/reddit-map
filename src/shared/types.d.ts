@@ -27,4 +27,4 @@ export interface City {
     bboxBounds: readonly [number, number, number, number];
     hoods: Hood[];
 }
-export type CityName = 'San Francisco' | 'New York City' | 'Bogotá' | 'Quito' | 'London' | 'Barcelona';
+export type CityName = 'San Francisco' | 'New York City' | 'Bogotá' | 'Quito' | 'London' | 'Barcelona' | 'Tokyo';
