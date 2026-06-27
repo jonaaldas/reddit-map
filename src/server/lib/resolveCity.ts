@@ -1,18 +1,18 @@
 import { context, settings } from '@devvit/web/server';
 import {
-  SUPPORTED_CITY_NAMES,
   expandToCities,
   inferCityFromSubreddit,
   inferScopeFromSubreddit,
   type CityName,
 } from '../../shared';
 
-const VALID_CITY = new Set<string>(SUPPORTED_CITY_NAMES);
-
-/** Devvit's settings.get can return string | string[] | undefined for selects. */
+/** Devvit's settings.get can return string | string[] | undefined for text/select settings. */
 function normalizeSetting(raw: unknown): string | undefined {
   if (typeof raw === 'string') return raw;
-  if (Array.isArray(raw) && typeof raw[0] === 'string') return raw[0];
+  if (Array.isArray(raw)) {
+    const values = raw.filter((value): value is string => typeof value === 'string');
+    return values.length ? values.join(', ') : undefined;
+  }
   return undefined;
 }
 
@@ -53,7 +53,7 @@ export async function resolveCity(): Promise<CityResolution> {
 
   // 3. Fall back to single-city inference.
   const inferred = inferCityFromSubreddit(subredditName);
-  if (inferred && VALID_CITY.has(inferred)) {
+  if (inferred) {
     return { cityNames: [inferred], source: 'inferred-city', debug };
   }
 

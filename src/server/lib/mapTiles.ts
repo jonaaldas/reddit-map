@@ -2,6 +2,9 @@ import { redis } from '@devvit/web/server';
 import {
   CITY_REGIONS,
   SCOPE_REGIONS,
+  TILE_MAX_ZOOM,
+  TILE_MIN_ZOOM,
+  combinedBounds,
   type CityName,
   type ScopeName,
   type TileCoord,
@@ -108,6 +111,13 @@ function isTileAllowed(tile: TileCoord, scope: TileScope): boolean {
       tile.z <= region.maxZoom &&
       tileInBounds(tile, region.bounds)
     );
+  }
+
+  if (scope.cities.length > 1) {
+    const lowestCityMinZoom = Math.min(...scope.cities.map((cityName) => CITY_REGIONS[cityName].minZoom));
+    if (tile.z >= TILE_MIN_ZOOM && tile.z < lowestCityMinZoom) {
+      return tile.z <= TILE_MAX_ZOOM && tileInBounds(tile, combinedBounds(scope.cities));
+    }
   }
 
   return scope.cities.some((cityName) => {

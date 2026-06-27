@@ -27,7 +27,7 @@ export type ScopeRegion = {
 export declare const SCOPE_REGIONS: Record<ScopeName, ScopeRegion>;
 export declare const SCOPE_NAMES: ScopeName[];
 export declare function isScopeName(s: string): s is ScopeName;
-/** Resolve any setting value (city or scope name) to a list of cities. */
+/** Resolve any setting value (city, scope name, or comma-separated city list) to a list of cities. */
 export declare function expandToCities(value: string): CityName[] | null;
 /** Combined Leaflet bounds covering every city in the list. */
 export declare function combinedBounds(cities: readonly CityName[]): LatLngBounds;

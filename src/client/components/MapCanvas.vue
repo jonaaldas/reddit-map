@@ -7,7 +7,9 @@ import {
   CITY_REGIONS,
   CITY_SCOPES,
   SCOPE_REGIONS,
+  TILE_MIN_ZOOM,
   TILE_URL,
+  combinedBounds,
   type CityName,
   type Pin,
   type ScopeName,
@@ -37,9 +39,9 @@ function resolveScope(): ScopeName | null {
 
 const scopeName = resolveScope();
 const scope = scopeName ? SCOPE_REGIONS[scopeName] : null;
-const isMulti = !!scope;
-const bounds = scope ? scope.bounds : primaryRegion.bounds;
-const minZoom = scope ? scope.minZoom : primaryRegion.minZoom;
+const isMulti = props.cityNames.length > 1;
+const bounds = scope ? scope.bounds : isMulti ? combinedBounds(props.cityNames) : primaryRegion.bounds;
+const minZoom = scope ? scope.minZoom : isMulti ? TILE_MIN_ZOOM : primaryRegion.minZoom;
 const maxZoom = primaryRegion.maxZoom;
 
 const mapEl = ref<HTMLDivElement | null>(null);
