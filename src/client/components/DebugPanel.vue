@@ -58,7 +58,7 @@ function copy(text: string) {
     @click="open = !open"
   >
     🛠 {{ open ? 'Hide' : 'Debug' }}
-    <span v-if="data" class="dp-toggle-count">{{ data.total }}</span>
+    <span v-if="data" class="dp-toggle-count">{{ data?.total ?? 0 }}</span>
   </button>
 
   <div v-if="open" class="dp-panel">

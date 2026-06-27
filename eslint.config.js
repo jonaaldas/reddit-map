@@ -6,6 +6,16 @@ import vue from 'eslint-plugin-vue';
 import vueParser from 'vue-eslint-parser';
 
 export default defineConfig([
+  {
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/build/**',
+      'src/shared/**/*.d.ts',
+      'eslint.config.js',
+      '**/vite.config.ts',
+    ],
+  },
   tseslint.configs.recommended,
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],

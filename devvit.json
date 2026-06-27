@@ -13,8 +13,10 @@
   "permissions": {
     "reddit": true,
     "http": {
+      "enable": true,
       "domains": [
-        "api.openai.com"
+        "api.openai.com",
+        "tile.openstreetmap.org"
       ]
     }
   },
@@ -81,39 +83,10 @@
         "placeholder": "e.g. r/AskNYC — locals sharing the best restaurants, bars, and hidden gems across New York City."
       },
       "cityName": {
-        "type": "select",
-        "label": "Map city",
-        "helpText": "Which city should this subreddit's map focus on? Leave unset to auto-detect from the subreddit name.",
-        "options": [
-          {
-            "label": "San Francisco",
-            "value": "San Francisco"
-          },
-          {
-            "label": "New York City",
-            "value": "New York City"
-          },
-          {
-            "label": "London",
-            "value": "London"
-          },
-          {
-            "label": "Barcelona",
-            "value": "Barcelona"
-          },
-          {
-            "label": "Bogotá",
-            "value": "Bogotá"
-          },
-          {
-            "label": "Quito",
-            "value": "Quito"
-          },
-          {
-            "label": "Andes (Quito + Bogotá)",
-            "value": "Andes"
-          }
-        ]
+        "type": "string",
+        "label": "Map cities",
+        "helpText": "Search by typing one or more supported cities, separated by commas. Examples: Tokyo, Quito, Bogotá, or Andes. Leave unset to auto-detect from the subreddit name.",
+        "placeholder": "Tokyo, Quito, Bogotá"
       },
       "postsToScan": {
         "type": "select",

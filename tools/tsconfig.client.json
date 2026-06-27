@@ -4,9 +4,9 @@
     "outDir": "../dist/types/client",
     "tsBuildInfoFile": "../dist/types/client/tsconfig.tsbuildinfo",
     "customConditions": ["browser"],
-    "rootDir": "../src/client",
+    "rootDir": "../src",
     "jsx": "preserve"
   },
-  "include": ["../src/client/**/*.ts", "../src/client/**/*.vue", "../src/client/**/*.d.ts"],
+  "include": ["../src/client/**/*.ts", "../src/client/**/*.vue", "../src/client/**/*.d.ts", "../src/shared/**/*"],
   "exclude": []
 }

@@ -1,9 +1,10 @@
-// Tile config for the Devvit iframe. Tiles ship as static assets in the
-// app bundle (Devvit CSP allows 'self'), served from `/maps/{z}/{x}/{y}.png`.
+// Tile config for the Devvit iframe. Client-side external requests are blocked
+// by Devvit CSP, so Leaflet requests same-origin tiles and the server proxies
+// the configured map provider.
 
 import type { CityName } from '../types';
 
-export const TILE_URL = '/maps/{z}/{x}/{y}.png';
+export const TILE_URL = '/api/tiles/{z}/{x}/{y}';
 export const TILE_MIN_ZOOM = 6;
 export const TILE_MAX_ZOOM = 13;
 
@@ -54,6 +55,12 @@ export const CITY_REGIONS: Record<CityName, CityRegion> = {
     minZoom: 11,
     maxZoom: 13,
   },
+  Tokyo: {
+    name: 'Tokyo',
+    bounds: [[35.50, 139.45], [35.90, 139.95]],
+    minZoom: 10,
+    maxZoom: 13,
+  },
 };
 
 export const SUPPORTED_CITY_NAMES: CityName[] = Object.keys(CITY_REGIONS) as CityName[];
@@ -90,13 +97,69 @@ export function isScopeName(s: string): s is ScopeName {
   return SCOPE_NAMES.includes(s as ScopeName);
 }
 
-/** Resolve any setting value (city or scope name) to a list of cities. */
-export function expandToCities(value: string): CityName[] | null {
-  if (isScopeName(value)) return [...CITY_SCOPES[value]];
-  if ((SUPPORTED_CITY_NAMES as readonly string[]).includes(value)) {
-    return [value as CityName];
-  }
+const CITY_ALIASES: Record<string, CityName> = {
+  sf: 'San Francisco',
+  bayarea: 'San Francisco',
+  nyc: 'New York City',
+  newyork: 'New York City',
+  newyorkcity: 'New York City',
+  bogota: 'Bogotá',
+};
+
+function searchKey(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+}
+
+const CITY_BY_SEARCH_KEY: Record<string, CityName> = Object.fromEntries([
+  ...SUPPORTED_CITY_NAMES.map((cityName) => [searchKey(cityName), cityName]),
+  ...Object.entries(CITY_ALIASES),
+]) as Record<string, CityName>;
+
+const SCOPE_BY_SEARCH_KEY: Record<string, ScopeName> = Object.fromEntries(
+  [
+    ...SCOPE_NAMES.map((scopeName) => [searchKey(scopeName), scopeName]),
+    ['andesquitobogota', 'Andes'],
+  ],
+) as Record<string, ScopeName>;
+
+function uniqueCities(cityNames: readonly CityName[]): CityName[] {
+  return [...new Set(cityNames)];
+}
+
+function splitCitySearch(value: string): string[] {
+  return value
+    .split(/[,;\n]|\s+\+\s+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function expandSingleCitySearch(value: string): CityName[] | null {
+  const directScope = SCOPE_BY_SEARCH_KEY[searchKey(value)];
+  if (directScope) return [...CITY_SCOPES[directScope]];
+
+  const city = CITY_BY_SEARCH_KEY[searchKey(value)];
+  if (city) return [city];
+
   return null;
+}
+
+/** Resolve any setting value (city, scope name, or comma-separated city list) to a list of cities. */
+export function expandToCities(value: string): CityName[] | null {
+  const wholeValue = expandSingleCitySearch(value);
+  if (wholeValue) return uniqueCities(wholeValue);
+
+  const cityNames: CityName[] = [];
+  for (const part of splitCitySearch(value)) {
+    const cities = expandSingleCitySearch(part);
+    if (!cities) return null;
+    cityNames.push(...cities);
+  }
+
+  return cityNames.length ? uniqueCities(cityNames) : null;
 }
 
 /** Combined Leaflet bounds covering every city in the list. */
@@ -148,6 +211,10 @@ export function inferCityFromSubreddit(subredditName: string | undefined | null)
 
     quito: 'Quito',
     ecuador: 'Quito',
+
+    tokyo: 'Tokyo',
+    japan: 'Tokyo',
+    japantravel: 'Tokyo',
   };
 
   if (map[slug]) return map[slug];

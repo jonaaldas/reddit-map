@@ -37,4 +37,5 @@ export type CityName =
   | 'Bogotá'
   | 'Quito'
   | 'London'
-  | 'Barcelona';
+  | 'Barcelona'
+  | 'Tokyo';
